@@ -1,18 +1,31 @@
+
 # Caesar Cipher
 # Arguments: string, integer
 # Returns: string
 def encrypt_caesar(plaintext, offset):
     encryptedWord = ""
     for c in plaintext:
+        #Using modulus to loop back to A if neccesary
         characterValue = (ord(c) + offset) % (ord('Z') + 1)
         if (ord(c) + offset) > ord('Z'):
+            #If I loop back to A then I need to add the remainder to A
             characterValue += ord('A')
         encryptedWord += chr(characterValue)
-    print(encryptedWord)
+    return encryptedWord
+
 # Arguments: string, integer
 # Returns: string
 def decrypt_caesar(ciphertext, offset):
-    pass
+    decryptedWord = ""
+    for c in ciphertext:
+        #Checking if I need to loop back to Z
+        if (ord(c) - offset) < ord('A'):
+            #If I do, I use modulus to find the difference and go backwards from z
+            characterValue = ord('Z')-((ord('A')-1) % (ord(c) - offset))
+        else:
+            characterValue = ord(c) - offset
+        decryptedWord += chr(characterValue)
+    return decryptedWord
 
 # Vigenere Cipher
 # Arguments: string, string
@@ -47,7 +60,7 @@ def decrypt_mhkc(ciphertext, private_key):
     pass
 
 def main():
-    encrypt_caesar("PYTHON",3)
+    print(decrypt_caesar("SBWKRQ",3))
 
 if __name__ == "__main__":
     main()
