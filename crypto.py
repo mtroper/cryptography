@@ -1,6 +1,8 @@
+import random
+import math
 
-#Helper function used in Caesar and Vigenere
-#Arguments: string, integer, integer
+#Helper function used to ecnrypt in Caesar and Vigenere
+#Arguments: integer, integer
 #Returns: character
 def encrypt_helper(asciiValue, offset):
  #Using modulus to loop back to A if neccesary
@@ -10,6 +12,9 @@ def encrypt_helper(asciiValue, offset):
             characterValue += ord('A')
         return chr(characterValue)
 
+#Helper function used to decrypt in Caesar and Vigenere
+#Arguments: integer, integer
+#Returns: character
 def decrypt_helper(asciiValue, offset):
     #Checking if I need to loop back to Z
     if (asciiValue - offset) < ord('A'):
@@ -25,8 +30,11 @@ def decrypt_helper(asciiValue, offset):
 def encrypt_caesar(plaintext, offset):
     encryptedWord = ""
     for c in plaintext:
-       #filling encryptedWord with my helper method
-       encryptedWord += encrypt_helper(ord(c), offset)
+        if(c == " "):
+            encryptedWord += " "
+        else:
+            #filling encryptedWord with my helper method
+            encryptedWord += encrypt_helper(ord(c), offset)
     return encryptedWord
 
 # Arguments: string, integer
@@ -34,8 +42,11 @@ def encrypt_caesar(plaintext, offset):
 def decrypt_caesar(ciphertext, offset):
     decryptedWord = ""
     for c in ciphertext:
-        #Filling decryptedWord with the decypt_helper
-        decryptedWord += decrypt_helper(ord(c),offset)
+        if(c == " "):
+            decryptedWord += " "
+        else:
+            #Filling decryptedWord with the decypt_helper
+            decryptedWord += decrypt_helper(ord(c),offset)
     return decryptedWord
 
 #Helper function used for Vigenere
@@ -77,25 +88,49 @@ def decrypt_vigenere(ciphertext, keyword):
 # Arguments: integer
 # Returns: tuple (W, Q, R) - W a length-n tuple of integers, Q and R both integers
 def generate_private_key(n=8):
-    pass
+    W = [1]
+    for i in range (n-len(W)):
+        #Making the superincreasing sequence
+        W.append(random.randint(sum(W)+1, 2*sum(W)))
+    #Turning it to a tuple
+    W = tuple(W)
+    #Q is essentially the next number in the superincreasing sequence
+    Q = random.randint(sum(W)+1, 2*sum(W))
+    R = 0
+    #Finding an R such that its gcd with Q is 1
+    while math.gcd(R,Q) != 1:
+        R = random.randint(2, Q-1)
+    return (W,Q,R)
 
 # Arguments: tuple (W, Q, R) - W a length-n tuple of integers, Q and R both integers
-# Returns: tuple B - a length-n tuple of integers
+# Returns: B - a length-n tuple of integers
 def create_public_key(private_key):
-    pass
+    B = []
+    for i in range(len(private_key[0])):
+        #FIlling a tuple with the superincreasing sequence * R % Q
+        B.append((private_key[2]*private_key[0][i])%private_key[1])
+    return tuple(B)
 
-# Arguments: string, tuple (W, Q, R)
+# Arguments: string, tuple B
 # Returns: list of integers
 def encrypt_mhkc(plaintext, public_key):
-    pass
+    encryptedMessage = []
+    for c in plaintext:
+       M = []
+       C = 0
+       binary = bin(ord(c))[2:].zfill(8)
+       M = [char for char in str(binary)]
+       for i in range(len(M)):
+           C += (int(M[i]) * public_key[i])
+       encryptedMessage.append(C)
+    return encryptedMessage
 
-# Arguments: list of integers, tuple B - a length-n tuple of integers
+# Arguments: list of integers, private key (W, Q, R) with W a tuple.
 # Returns: bytearray or str of plaintext
 def decrypt_mhkc(ciphertext, private_key):
     pass
 
 def main():
-    print(decrypt_vigenere("LXFOPVEFRNHR", "LEMON"))
-
+    print(encrypt_mhkc("Hello World", create_public_key(generate_private_key())))
 if __name__ == "__main__":
     main()
