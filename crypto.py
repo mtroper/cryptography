@@ -125,12 +125,21 @@ def encrypt_mhkc(plaintext, public_key):
        encryptedMessage.append(C)
     return encryptedMessage
 
+
 # Arguments: list of integers, private key (W, Q, R) with W a tuple.
 # Returns: bytearray or str of plaintext
 def decrypt_mhkc(ciphertext, private_key):
-    pass
-
+    S = 1
+    C1_list = []
+    while((private_key[2] * S) % private_key[1] != 1):
+        S += 1
+    for C in ciphertext:
+        C1 = S * C
+        C1_list.append(C1)
+    
 def main():
-    print(encrypt_mhkc("Hello World", create_public_key(generate_private_key())))
+    private_key = generate_private_key()
+    decrypt_mhkc(encrypt_mhkc("Hello", create_public_key(private_key)), private_key)
+
 if __name__ == "__main__":
     main()
