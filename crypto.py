@@ -130,16 +130,26 @@ def encrypt_mhkc(plaintext, public_key):
 # Returns: bytearray or str of plaintext
 def decrypt_mhkc(ciphertext, private_key):
     S = 1
-    C1_list = []
+    decryptedMessage = ""
     while((private_key[2] * S) % private_key[1] != 1):
         S += 1
     for C in ciphertext:
-        C1 = S * C
-        C1_list.append(C1)
+        C1 = (S*C) % private_key[1]
+        binaryValues = []
+        for i in range(len(private_key[0])):
+            if(private_key[0][len(private_key[0]) - i-1] <= C1):
+                binaryValues.append(1)
+                C1 -= private_key[0][len(private_key[0]) - i-1]
+            else:
+                binaryValues.append(0)
+        binaryValues.reverse()
+        binary = ''.join(map(str, binaryValues))
+        decryptedMessage += chr(int(binary,2))
+    return decryptedMessage
     
 def main():
     private_key = generate_private_key()
-    decrypt_mhkc(encrypt_mhkc("Hello", create_public_key(private_key)), private_key)
+    print(decrypt_mhkc(encrypt_mhkc("HELLO", create_public_key(private_key)), private_key))
 
 if __name__ == "__main__":
     main()
