@@ -30,11 +30,12 @@ def decrypt_helper(asciiValue, offset):
 def encrypt_caesar(plaintext, offset):
     encryptedWord = ""
     for c in plaintext:
-        if(c == " "):
-            encryptedWord += " "
-        else:
+        #If the character is uppercase A-Z
+        if ord(c) >= ord("A") and ord(c) <= ord("Z"):
             #filling encryptedWord with my helper method
             encryptedWord += encrypt_helper(ord(c), offset)
+        else:
+            encryptedWord += c
     return encryptedWord
 
 # Arguments: string, integer
@@ -42,11 +43,12 @@ def encrypt_caesar(plaintext, offset):
 def decrypt_caesar(ciphertext, offset):
     decryptedWord = ""
     for c in ciphertext:
-        if(c == " "):
-            decryptedWord += " "
-        else:
+         #If the character is uppercase A-Z
+        if ord(c) >= ord("A") and ord(c) <= ord("Z"):
             #Filling decryptedWord with the decypt_helper
             decryptedWord += decrypt_helper(ord(c),offset)
+        else:
+            decryptedWord += c
     return decryptedWord
 
 #Helper function used for Vigenere
@@ -107,7 +109,7 @@ def generate_private_key(n=8):
 def create_public_key(private_key):
     B = []
     for i in range(len(private_key[0])):
-        #FIlling a tuple with the superincreasing sequence * R % Q
+        #Filling a tuple with the superincreasing sequence * R % Q
         B.append((private_key[2]*private_key[0][i])%private_key[1])
     return tuple(B)
 
@@ -118,38 +120,46 @@ def encrypt_mhkc(plaintext, public_key):
     for c in plaintext:
        M = []
        C = 0
+       #Turning each character of the message into binary
        binary = bin(ord(c))[2:].zfill(8)
        M = [char for char in str(binary)]
        for i in range(len(M)):
+           #Summing the multiplication of each digit in the binary by the corresponding index of the public key
            C += (int(M[i]) * public_key[i])
        encryptedMessage.append(C)
     return encryptedMessage
-
 
 # Arguments: list of integers, private key (W, Q, R) with W a tuple.
 # Returns: bytearray or str of plaintext
 def decrypt_mhkc(ciphertext, private_key):
     S = 1
     decryptedMessage = ""
+    #Finding an S such that R * S % Q is 1
     while((private_key[2] * S) % private_key[1] != 1):
         S += 1
     for C in ciphertext:
+        #Multiplying by S then mod Q because it becomes 1
+        #This leaves us with C1 just being equal to the sum of the multiplcation of the superincreasing sequence and the character in binary
         C1 = (S*C) % private_key[1]
         binaryValues = []
         for i in range(len(private_key[0])):
+            #Since the sequence is superincreasing we can determine exactly which numbers are used in it and their corresponding binary
+            #If the number is smaller than or equal to the sum it must be included since the sum of everything before it is smaller
             if(private_key[0][len(private_key[0]) - i-1] <= C1):
                 binaryValues.append(1)
                 C1 -= private_key[0][len(private_key[0]) - i-1]
             else:
+                #If the number is larger than the sum it's impossible for it to fit
                 binaryValues.append(0)
+        #Since we looped from small to big when we shouldve went big to small we must reverse
         binaryValues.reverse()
         binary = ''.join(map(str, binaryValues))
+        #Turn binary back to ASCII then back to the actual characters
         decryptedMessage += chr(int(binary,2))
     return decryptedMessage
-    
+
 def main():
-    private_key = generate_private_key()
-    print(decrypt_mhkc(encrypt_mhkc("HELLO", create_public_key(private_key)), private_key))
+    prin("Hello World")
 
 if __name__ == "__main__":
     main()
